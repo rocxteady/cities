@@ -7,6 +7,7 @@
 //
 
 #import "ViewController.h"
+#import "CCityDataHelper.h"
 
 @interface ViewController ()
 
@@ -17,6 +18,13 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     // Do any additional setup after loading the view, typically from a nib.
+    [[CCityDataHelper sharedInstance] loadCities:^(NSError *error) {
+        NSDate *date = [NSDate date];
+        [[CCityDataHelper sharedInstance] searchCity:@"Ista" withBlock:^(NSArray *cities, NSError *error) {
+            NSLog(@"%f", [[NSDate date] timeIntervalSinceDate:date]);
+            NSLog(@"%@", cities);
+        }];
+    }];
 }
 
 
