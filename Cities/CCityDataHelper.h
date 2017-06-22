@@ -11,6 +11,11 @@
 typedef void(^CCitiesLoadBlock)(NSError *error);
 typedef void(^CCitiesArrayBlock)(NSArray *cities, NSError *error);
 
+typedef NS_ENUM(NSUInteger, CCitySearchType){
+    CCitySearchTypePredicate,
+    CCitySearchTypeIterate
+};
+
 @interface CCityDataHelper : NSObject
 
 @property (strong, nonatomic, readonly) NSArray *cities;
@@ -19,6 +24,6 @@ typedef void(^CCitiesArrayBlock)(NSArray *cities, NSError *error);
 
 - (void)loadCities:(CCitiesLoadBlock)block;
 
-- (void)searchCity:(NSString *)searchText withBlock:(CCitiesArrayBlock)block;
+- (void)searchCity:(NSString *)searchText searchType:(CCitySearchType)searchType withBlock:(CCitiesArrayBlock)block;
 
 @end
