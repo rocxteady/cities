@@ -16,6 +16,13 @@ typedef NS_ENUM(NSUInteger, CCitySearchType){
     CCitySearchTypeIterate
 };
 
+typedef NS_ENUM(NSUInteger, CCityDataStatus){
+    CCityDataStatusIdle,
+    CCityDataStatusLoading,
+    CCityDataStatusCompleted,
+    CCityDataStatusError
+};
+
 @interface CCityDataHelper : NSObject
 
 @property (strong, nonatomic, readonly) NSArray *cities;
@@ -23,6 +30,10 @@ typedef NS_ENUM(NSUInteger, CCitySearchType){
 + (instancetype)sharedInstance;
 
 - (void)loadCities:(CCitiesLoadBlock)block;
+
+- (void)loadCitiesWithStartIndex:(NSUInteger)startIndex count:(NSUInteger)count block:(CCitiesArrayBlock)block;
+
+- (void)loadCitiesWithStartIndex:(NSUInteger)startIndex count:(NSUInteger)count inCities:(NSArray *)cities block:(CCitiesArrayBlock)block;
 
 - (void)searchCity:(NSString *)searchText searchType:(CCitySearchType)searchType withBlock:(CCitiesArrayBlock)block;
 

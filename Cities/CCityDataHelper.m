@@ -20,6 +20,27 @@
 
 }
 
+- (void)loadCitiesWithStartIndex:(NSUInteger)startIndex count:(NSUInteger)count block:(CCitiesArrayBlock)block {
+    NSRange range = NSMakeRange(startIndex, count);
+    if (_cities.count == 0) {
+        [self loadCities:^(NSError *error) {
+            if (error) {
+                block(nil, error);
+                return;
+            }
+            block([_cities subarrayWithRange:range], nil);
+        }];
+    }
+    else {
+        block([_cities subarrayWithRange:range], nil);
+    }
+}
+
+- (void)loadCitiesWithStartIndex:(NSUInteger)startIndex count:(NSUInteger)count inCities:(NSArray *)cities block:(CCitiesArrayBlock)block {
+    NSRange range = NSMakeRange(startIndex, count);
+    block([cities subarrayWithRange:range], nil);
+}
+
 - (void)loadCities:(CCitiesLoadBlock)block {
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         NSString *citiesPath = [[NSBundle mainBundle] pathForResource:@"cities" ofType:@"json"];
@@ -59,11 +80,10 @@
 }
 
 - (void)searchCityWithIteration:(NSString *)searchText withBlock:(CCitiesArrayBlock)block {
-    NSString *lowercaseText = [searchText lowercaseString];
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         NSMutableArray *results = [NSMutableArray array];
         for (NSDictionary *cityDictionary in _cities) {
-            if ([[cityDictionary[@"name"] lowercaseString] hasPrefix:lowercaseText]) {
+            if ([cityDictionary[@"name"] rangeOfString:searchText options:NSCaseInsensitiveSearch|NSDiacriticInsensitiveSearch].location == 0) {
                 [results addObject:cityDictionary];
             }
         }
