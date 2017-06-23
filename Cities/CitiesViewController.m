@@ -15,6 +15,7 @@ static NSString *CityCellIdentifier = @"CityCell";
 
 @interface CitiesViewController () <UISearchBarDelegate, UISearchResultsUpdating>
 
+@property (strong, nonatomic) CCityDataHelper *dataHelper;
 @property (strong, nonatomic) NSMutableArray *cities;
 @property (assign, nonatomic) CCityDataStatus dataStatus;
 
@@ -40,6 +41,7 @@ static NSString *CityCellIdentifier = @"CityCell";
 
 - (void)viewDidLoad {
     [super viewDidLoad];
+    _dataHelper = [CCityDataHelper new];
     _pageCount = 50;
     self.refreshControl = [[UIRefreshControl alloc] init];
     [self.refreshControl addTarget:self action:@selector(refreshControlHandler) forControlEvents:UIControlEventValueChanged];
@@ -55,11 +57,6 @@ static NSString *CityCellIdentifier = @"CityCell";
 
     self.definesPresentationContext = YES;  // know where you want UISearchController to be displayed
     [self loadCities];
-}
-
-- (void)viewWillAppear:(BOOL)animated {
-    [super viewWillAppear:animated];
-    [self.tableView deselectRowAtIndexPath:self.tableView.indexPathForSelectedRow animated:YES];
 }
 
 - (void)viewDidAppear:(BOOL)animated {
@@ -79,10 +76,11 @@ static NSString *CityCellIdentifier = @"CityCell";
     [self loadCities];
 }
 
+//Listing and paging cities
 - (void)loadCities {
     [UIApplication sharedApplication].networkActivityIndicatorVisible = YES;
     _dataStatus = CCityDataStatusLoading;
-    [[CCityDataHelper sharedInstance] loadCitiesWithStartIndex:_currentIndex count:_pageCount block:^(NSArray *cities, NSError *error) {
+    [_dataHelper loadCitiesWithStartIndex:_currentIndex count:_pageCount block:^(NSArray *cities, NSError *error) {
         [UIApplication sharedApplication].networkActivityIndicatorVisible = NO;
         if ([self.refreshControl isRefreshing]) {
             [self.refreshControl endRefreshing];
@@ -91,7 +89,7 @@ static NSString *CityCellIdentifier = @"CityCell";
             if (cities.count > 0) {
                 _dataStatus = CCityDataStatusIdle;
                 _currentIndex += _pageCount;
-                [self insertNewCities:cities];
+                [self insertNewCities:cities forTableView:self.tableView];
             }
             else {
                 _dataStatus = CCityDataStatusCompleted;
@@ -103,16 +101,68 @@ static NSString *CityCellIdentifier = @"CityCell";
     }];
 }
 
-- (void)insertNewCities:(NSArray *)newCities {
-    NSMutableArray *indexPaths = [NSMutableArray array];
-    for (NSUInteger i = self.cities.count; i < self.cities.count + newCities.count; i++) {
-        NSIndexPath *indexPath = [NSIndexPath indexPathForRow:i inSection:0];
-        [indexPaths addObject:indexPath];
+//Searching city and paging
+- (void)searchCity:(NSString *)searchText {
+    [UIApplication sharedApplication].networkActivityIndicatorVisible = YES;
+    [_dataHelper searchCity:searchText searchType:CCitySearchTypePredicate withBlock:^(NSArray *cities, NSError *error) {
+        [UIApplication sharedApplication].networkActivityIndicatorVisible = NO;
+        if (!error) {
+            [_dataHelper loadCitiesWithStartIndex:_resultsViewController.currentIndex count:_resultsViewController.pageCount inCities:cities block:^(NSArray *newCities, NSError *error) {
+                if (_resultsViewController.currentIndex == 0) {
+                    if (newCities.count > _resultsViewController.pageCount) {
+                        _resultsViewController.dataStatus = CCityDataStatusIdle;
+                    }
+                    else {
+                        _resultsViewController.dataStatus = CCityDataStatusCompleted;
+                    }
+                    _resultsViewController.citySearchResults = [newCities mutableCopy];
+                    [_resultsViewController.tableView reloadData];
+                }
+                else if (newCities.count > 0) {
+                    if (newCities.count > _resultsViewController.pageCount) {
+                        _resultsViewController.dataStatus = CCityDataStatusIdle;
+                        _resultsViewController.currentIndex += _resultsViewController.pageCount;
+                    }
+                    else {
+                        _resultsViewController.dataStatus = CCityDataStatusCompleted;
+                    }
+                    [self insertNewCities:newCities forTableView:_resultsViewController.tableView];
+                }
+                else {
+                    _resultsViewController.dataStatus = CCityDataStatusCompleted;
+                }
+            }];
+        }
+        else {
+            _dataStatus = CCityDataStatusError;
+        }
+    }];
+}
+
+//Inserting new data while paging
+- (void)insertNewCities:(NSArray *)newCities forTableView:(UITableView *)tableView{
+    if (tableView == self.tableView) {
+        NSMutableArray *indexPaths = [NSMutableArray array];
+        for (NSUInteger i = self.cities.count; i < self.cities.count + newCities.count; i++) {
+            NSIndexPath *indexPath = [NSIndexPath indexPathForRow:i inSection:0];
+            [indexPaths addObject:indexPath];
+        }
+        [self.cities addObjectsFromArray:newCities];
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [tableView insertRowsAtIndexPaths:indexPaths withRowAnimation:UITableViewRowAnimationNone];
+        });
     }
-    [self.cities addObjectsFromArray:newCities];
-    dispatch_async(dispatch_get_main_queue(), ^{
-        [self.tableView insertRowsAtIndexPaths:indexPaths withRowAnimation:UITableViewRowAnimationNone];
-    });
+    else {
+        NSMutableArray *indexPaths = [NSMutableArray array];
+        for (NSUInteger i = _resultsViewController.citySearchResults.count; i < _resultsViewController.citySearchResults.count + newCities.count; i++) {
+            NSIndexPath *indexPath = [NSIndexPath indexPathForRow:i inSection:0];
+            [indexPaths addObject:indexPath];
+        }
+        [_resultsViewController.citySearchResults addObjectsFromArray:newCities];
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [tableView insertRowsAtIndexPaths:indexPaths withRowAnimation:UITableViewRowAnimationNone];
+        });
+    }
 }
 
 #pragma mark - UISearchBarDelegate
@@ -125,14 +175,11 @@ static NSString *CityCellIdentifier = @"CityCell";
 
 - (void)updateSearchResultsForSearchController:(UISearchController *)searchController {
     NSString *searchText = searchController.searchBar.text;
-    [UIApplication sharedApplication].networkActivityIndicatorVisible = YES;
-    [[CCityDataHelper sharedInstance] searchCity:searchText searchType:CCitySearchTypeIterate withBlock:^(NSArray *cities, NSError *error) {
-        // hand over the filtered results to our search results table
-        [UIApplication sharedApplication].networkActivityIndicatorVisible = NO;
-        CitySearchResultsViewController *resultsController = (CitySearchResultsViewController *)_searchController.searchResultsController;
-        resultsController.citySearchResults = cities;
-        [resultsController.tableView reloadData];
-    }];
+    searchText = [searchText stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
+    if (searchText.length > 0) {
+        _resultsViewController.currentIndex = 0;
+       [self searchCity:searchText];
+    }
 }
 
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
@@ -154,10 +201,29 @@ static NSString *CityCellIdentifier = @"CityCell";
 }
 
 - (void)tableView:(UITableView *)tableView willDisplayCell:(UITableViewCell *)cell forRowAtIndexPath:(NSIndexPath *)indexPath {
-    if (indexPath.row == self.cities.count - 10) {
-        switch (_dataStatus) {
+//    Deciding should load more or not
+    NSInteger loadIndex;
+    CCityDataStatus dataStatus;
+    if (tableView == self.tableView) {
+        dataStatus = _dataStatus;
+        loadIndex = self.cities.count - 10;
+    }
+    else {
+        dataStatus = _resultsViewController.dataStatus;
+        loadIndex = _resultsViewController.citySearchResults.count - 10;
+    }
+    if (loadIndex < 1) {
+        return;
+    }
+    if (indexPath.row == loadIndex) {
+        switch (dataStatus) {
             case CCityDataStatusIdle:
-                [self loadCities];
+                if (tableView == self.tableView) {
+                    [self loadCities];
+                }
+                else {
+                    [self searchCity:_searchController.searchBar.text];
+                }
                 break;
             case CCityDataStatusLoading:
                 
@@ -166,7 +232,12 @@ static NSString *CityCellIdentifier = @"CityCell";
                 
                 break;
             case CCityDataStatusError:
-                [self loadCities];
+                if (tableView == self.tableView) {
+                    [self loadCities];
+                }
+                else {
+                    [self searchCity:_searchController.searchBar.text];
+                }
                 break;
             default:
                 break;
@@ -175,11 +246,14 @@ static NSString *CityCellIdentifier = @"CityCell";
 }
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
+//    Navigation
     NSDictionary *cityDictionary = (tableView == self.tableView) ?
     self.cities[indexPath.row] : _resultsViewController.citySearchResults[indexPath.row];
     
     CityDetailViewController *detailViewController = [self.storyboard instantiateViewControllerWithIdentifier:@"CityDetailViewController"];
     detailViewController.cityDictionary = cityDictionary;
+    
+    [tableView deselectRowAtIndexPath:tableView.indexPathForSelectedRow animated:YES];
     
     [self.navigationController pushViewController:detailViewController animated:YES];
 }

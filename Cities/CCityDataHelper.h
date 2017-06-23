@@ -27,9 +27,9 @@ typedef NS_ENUM(NSUInteger, CCityDataStatus){
 
 @property (strong, nonatomic, readonly) NSArray *cities;
 
-+ (instancetype)sharedInstance;
-
 - (void)loadCities:(CCitiesLoadBlock)block;
+
+- (void)loadTestCities:(CCitiesLoadBlock)block;
 
 - (void)loadCitiesWithStartIndex:(NSUInteger)startIndex count:(NSUInteger)count block:(CCitiesArrayBlock)block;
 

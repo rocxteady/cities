@@ -7,9 +7,13 @@
 //
 
 #import <UIKit/UIKit.h>
+#import "CCityDataHelper.h"
 
 @interface CitySearchResultsViewController : UITableViewController
 
-@property (nonatomic, strong) NSArray *citySearchResults;
+@property (nonatomic, strong) NSMutableArray *citySearchResults;
+@property (assign, nonatomic) CCityDataStatus dataStatus;
+@property (assign, nonatomic) NSUInteger currentIndex;
+@property (assign, nonatomic) NSUInteger pageCount;
 
 @end

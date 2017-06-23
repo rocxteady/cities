@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		7C15A58E1EFC2AE900E126D7 /* test.json in Resources */ = {isa = PBXBuildFile; fileRef = 7C15A58D1EFC2AE900E126D7 /* test.json */; };
 		7C330DA21EFBA47B00301ADF /* CitySearchResultsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 7C330DA11EFBA47B00301ADF /* CitySearchResultsViewController.m */; };
 		7C330DA51EFBABB400301ADF /* CityDetailViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 7C330DA41EFBABB400301ADF /* CityDetailViewController.m */; };
 		7C330DA81EFBADAF00301ADF /* MapKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7C330DA71EFBADAF00301ADF /* MapKit.framework */; };
@@ -33,6 +34,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		7C15A58D1EFC2AE900E126D7 /* test.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = test.json; sourceTree = "<group>"; };
 		7C330DA01EFBA47B00301ADF /* CitySearchResultsViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CitySearchResultsViewController.h; sourceTree = "<group>"; };
 		7C330DA11EFBA47B00301ADF /* CitySearchResultsViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CitySearchResultsViewController.m; sourceTree = "<group>"; };
 		7C330DA31EFBABB400301ADF /* CityDetailViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CityDetailViewController.h; sourceTree = "<group>"; };
@@ -132,6 +134,7 @@
 			isa = PBXGroup;
 			children = (
 				7C45445F1EFADF75007F253A /* cities.json */,
+				7C15A58D1EFC2AE900E126D7 /* test.json */,
 				7C45443B1EFADE9F007F253A /* main.m */,
 			);
 			name = "Supporting Files";
@@ -232,6 +235,7 @@
 			files = (
 				7C4544601EFADF75007F253A /* cities.json in Resources */,
 				7C45444A1EFADE9F007F253A /* LaunchScreen.storyboard in Resources */,
+				7C15A58E1EFC2AE900E126D7 /* test.json in Resources */,
 				7C4544471EFADE9F007F253A /* Assets.xcassets in Resources */,
 				7C4544451EFADE9F007F253A /* Main.storyboard in Resources */,
 			);

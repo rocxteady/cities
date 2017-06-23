@@ -1,0 +1,10 @@
+[
+{"country":"GB","name":"London","_id":2643743,"coord":{"lon":-0.12574,"lat":51.50853}},
+{"country":"TR","name":"Istanbul","_id":745044,"coord":{"lon":28.949659,"lat":41.01384}},
+{"country":"ES","name":"Madrid","_id":6359304,"coord":{"lon":-3.68275,"lat":40.489349}},
+{"country":"FR","name":"Paris","_id":2968815,"coord":{"lon":2.3486,"lat":48.853401}},
+{"country":"US","name":"Vienna","_id":4095475,"coord":{"lon":-88.191971,"lat":33.018742}},
+{"country":"SE","name":"Stockholm","_id":2673730,"coord":{"lon":18.064899,"lat":59.332581}},
+{"country":"IT","name":"Milan","_id":6542283,"coord":{"lon":9.19199,"lat":45.464161}},
+{"country":"NL","name":"Amsterdam","_id":2759794,"coord":{"lon":4.88969,"lat":52.374031}}
+]

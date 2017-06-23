@@ -16,25 +16,28 @@ static NSString *CellIdentifier = @"CityResultCell";
 
 @implementation CitySearchResultsViewController
 
-- (void)viewWillAppear:(BOOL)animated {
-    [super viewWillAppear:animated];
-    [self.tableView deselectRowAtIndexPath:self.tableView.indexPathForSelectedRow animated:YES];
+- (NSMutableArray *)citySearchResults {
+    if (!_citySearchResults) {
+        _citySearchResults = [NSMutableArray array];
+    }
+    return _citySearchResults;
 }
 
 - (void)viewDidLoad {
     [super viewDidLoad];
+    _pageCount = 100;
     [self.tableView registerClass:[UITableViewCell class] forCellReuseIdentifier:CellIdentifier];
 }
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
-    return _citySearchResults.count;
+    return self.citySearchResults.count;
 }
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
     UITableViewCell *cell = [self.tableView dequeueReusableCellWithIdentifier:CellIdentifier];
     cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
     
-    NSDictionary *cityDictionary = _citySearchResults[indexPath.row];
+    NSDictionary *cityDictionary = self.citySearchResults[indexPath.row];
     cell.textLabel.text = [NSString stringWithFormat:@"%@, %@", cityDictionary[@"name"], cityDictionary[@"country"]];
     
     return cell;
